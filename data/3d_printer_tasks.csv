@@ -1,4 +1,4 @@
 process,timestamp,running_time,idle_time,uart_transmit_calls,uart_receive_calls,i2c_read_calls,i2d_write_calls,spi_transfer_calls,gpio_interrupt_calls,adc_read_calls,sleep_calls
-0,5002,17,4985,1000,0,0,0,0,0,1001,1000
-1,5002,4839,163,0,0,0,0,0,2000,0,1000
-2,5002,146,4856,1000,1000,0,0,0,0,0,1000
+0,5002,152,4850,21,0,0,0,0,0,22,21
+1,5002,4850,5023,0,0,0,0,0,43,0,5002
+2,5002,4654,348,527,527,0,0,0,0,0,527
