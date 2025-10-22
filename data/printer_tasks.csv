@@ -2540,4 +2540,3 @@ process,name,timestamp,running_time,idle_time,uart_transmit_calls,uart_receive_c
 0,temp_monitor,45502,940,44562,196,0,0,0,0,0,197,196.0
 1,gcode_parser,45502,42273,3229,4863,4863,0,0,0,0,0,4863.0
 2,stepper,45502,2297,43205,0,0,0,0,492,493,0,492.0
-0,power,46002,46002,0,12047,12049,0,0,24095,0,0,3096196.0
