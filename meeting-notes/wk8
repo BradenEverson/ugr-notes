@@ -1,0 +1,23 @@
+Meeting Notes for 10/22/25
+
+Progress:
+- 7 3D Printer Tasks Traced/Initial Dataset Created
+    - 2502 samples of traces ranging from 0-90s of runtime
+    - Randomized selection of the 7 tasks for diverse metric tracing
+- Initial Exploratory Data Analysis on Printer Dataset
+
+Next Steps:
+- Potential Models:
+    - Decision Trees
+        - Pros: Easily Quantizable, Shallow Trees will have a relatively fast runtime
+        - Cons: Might need a deeper tree to generalize the data's relationship, higher runtime cost
+        - Higher storage cost
+    - SVM
+        - Pros: Relatively small runtime cost, faster than linear regression if we have less support vectors than features.
+        - Cons: Quantization might get a little tricky (cutting short floating point numbers to ints)
+
+Questions:
+- Dataset includes samples where only 1 task is running, is this something we should remove?
+- What is the decision we want modeled:
+    - IO Heavy Rating and CPU Heavy Rating to inform next process to run?
+    - Based on a given task, is it the *right* choice for scheduling next under some "best" algorithm
