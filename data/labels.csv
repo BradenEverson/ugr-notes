@@ -1,0 +1,8 @@
+name,io_intensivity,cpu_intensivity
+temp_monitor,1,1
+stepper,2,0
+gcode_parser,1,2
+safety,2,0
+status_led,2,1
+network,1,1
+power,0,0
