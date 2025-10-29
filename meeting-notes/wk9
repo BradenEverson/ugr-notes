@@ -1,0 +1,18 @@
+Meeting Notes for 10/29/25
+
+Progress:
+- Performed PCA on our input feature-space. ~99.6% of the variance is explained in 2 principal components.
+- Classified tasks by IO Intensive or CPU Intensive
+    - Created binary classes (0 - CPU, 1 - IO) alongside 3 category classes for "level of IO intensity" and "level of CPU intensity" (0 - low, 1 - medium, 2 - high)
+- Trained Models on the binary classification task:
+    - Logistic Regression: 75% validation accuracy
+    - SVM:                 88% validation accuracy
+    - Decision Trees:      86% validation accuracy
+
+Next Steps:
+- Where to use the models!
+    - Decide a time quantum fit for IO/CPU heavier tasks to reduce starvation
+    - New potential metric we want to minimize: average job starvation.
+- Create embedded runtimes for these models
+- Quantize feature space and retrain models
+
