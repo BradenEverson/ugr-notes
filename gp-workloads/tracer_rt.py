@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 from bcc import BPF
-from time import strftime
+import argparse
+import sys
+import signal
+
+# Command line arguments
+parser = argparse.ArgumentParser(description='Trace system calls from realtime processes')
+parser.add_argument('-o', '--output', help='Output file (default: stdout)')
+args = parser.parse_args()
+
+# Setup output file
+if args.output:
+    output_file = open(args.output, 'w')
+else:
+    output_file = sys.stdout
 
 # eBPF program
 bpf_text = """
@@ -72,20 +85,32 @@ syscall_names = {
 def get_syscall_name(nr):
     return syscall_names.get(nr, f"syscall_{nr}")
 
+def print_header(sig=None, frame=None):
+    print("timestamp,relative_time,pid,comm,uid,syscall", file=output_file)
+    output_file.flush()
+
+
+# Tracking for relative timestamps
+start_time = None
+
 # Process event
 def print_event(cpu, data, size):
+    global start_time
     event = b["events"].event(data)
     
+    if start_time is None:
+        start_time = event.ts
+    
     syscall_name = get_syscall_name(event.syscall_nr)
+    comm = event.comm.decode('utf-8', 'replace')
     
     # Convert nanoseconds timestamp to seconds with nanosecond precision
     ts_sec = event.ts / 1_000_000_000
+    relative_ts = (event.ts - start_time) / 1_000_000_000
     
-    print(f"{ts_sec:<18.9f} "
-          f"PID: {event.pid:<8} "
-          f"COMM: {event.comm.decode('utf-8', 'replace'):<16} "
-          f"UID: {event.uid:<6} "
-          f"SYSCALL: {syscall_name}")
+    # CSV format: timestamp,relative_time,pid,comm,uid,syscall
+    print(f"{ts_sec:.9f},{relative_ts:.9f},{event.pid},{comm},{event.uid},{syscall_name}", file=output_file)
+    output_file.flush()
 
 if __name__ == "__main__":
     # Load BPF program
@@ -93,15 +118,28 @@ if __name__ == "__main__":
     
     # Attach to perf output
     b["events"].open_perf_buffer(print_event)
+
+    signal.signal(signal.SIGUSR1, print_header)
     
-    print("Tracing system calls from REALTIME processes only (SCHED_FIFO/SCHED_RR)...")
-    print("Press Ctrl-C to stop.")
-    print(f"{'TIMESTAMP (ns)':<18} {'PID':<8} {'COMM':<16} {'UID':<6} {'SYSCALL'}")
-    print("-" * 80)
+    msg = "Tracing system calls from REALTIME processes only (SCHED_FIFO/SCHED_RR)..."
+    if args.output:
+        msg += f"\nOutput file: {args.output}"
+    
+    print(msg, file=sys.stderr)
+    
+    # CSV header
+    print_header()
+    
+    # Signal that we're ready
+    print("READY", file=sys.stderr)
+    sys.stderr.flush()
     
     # Read events
     try:
         while True:
             b.perf_buffer_poll()
     except KeyboardInterrupt:
-        print("\nDetaching...")
+        print("\n\nDetaching...", file=sys.stderr)
+        
+        if args.output:
+            output_file.close()
