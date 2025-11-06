@@ -115,7 +115,7 @@ def get_syscall_name(nr):
     return syscall_names.get(nr, f"syscall_{nr}")
 
 def print_header(sig=None, frame=None):
-    print("timestamp,relative_time,pid,comm,uid,syscall", file=output_file)
+    print("timestamp,relative_time,pid,comm,uid,syscall,duration_us", file=output_file)
     output_file.flush()
 
 
