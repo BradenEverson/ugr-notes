@@ -24,41 +24,70 @@ struct data_t {
     u32 pid;
     u32 uid;
     u64 ts;
+    u64 duration_ns;
     int syscall_nr;
     char comm[TASK_COMM_LEN];
 };
 
 BPF_PERF_OUTPUT(events);
-BPF_HASH(start, u32);
+BPF_HASH(start, u64, u64);
 
 TRACEPOINT_PROBE(raw_syscalls, sys_enter) {
     u64 pid_tgid = bpf_get_current_pid_tgid();
     u32 pid = pid_tgid >> 32;
-    u32 tid = (u32)pid_tgid;
-    
+
     // Get current task's scheduling policy
     struct task_struct *task = (struct task_struct *)bpf_get_current_task();
     int policy = task->policy;
-    
+
     // Filter for realtime processes only
     // SCHED_FIFO = 1, SCHED_RR = 2
     if (policy != 1 && policy != 2) {
         return 0;
     }
-    
+
     // Record start time for this syscall
     u64 ts = bpf_ktime_get_ns();
-    start.update(&tid, &ts);
-    
+    start.update(&pid_tgid, &ts);
+
+    return 0;
+}
+
+TRACEPOINT_PROBE(raw_syscalls, sys_exit) {
+    u64 pid_tgid = bpf_get_current_pid_tgid();
+    u32 pid = pid_tgid >> 32;
+
+    // Get current task's scheduling policy
+    struct task_struct *task = (struct task_struct *)bpf_get_current_task();
+    int policy = task->policy;
+
+    // Filter for realtime processes only
+    if (policy != 1 && policy != 2) {
+        return 0;
+    }
+
+    // Get start time
+    u64 *tsp = start.lookup(&pid_tgid);
+    if (tsp == 0) {
+        return 0;  // Missed entry
+    }
+
+    u64 ts_end = bpf_ktime_get_ns();
+    u64 duration = ts_end - *tsp;
+
     struct data_t data = {};
     data.pid = pid;
     data.uid = bpf_get_current_uid_gid();
-    data.ts = ts;
+    data.ts = *tsp;
+    data.duration_ns = duration;
     data.syscall_nr = args->id;
     bpf_get_current_comm(&data.comm, sizeof(data.comm));
-    
+
     events.perf_submit(args, &data, sizeof(data));
-    
+
+    // Cleanup
+    start.delete(&pid_tgid);
+
     return 0;
 }
 """
@@ -93,53 +122,56 @@ def print_header(sig=None, frame=None):
 # Tracking for relative timestamps
 start_time = None
 
+
 # Process event
 def print_event(cpu, data, size):
     global start_time
     event = b["events"].event(data)
-    
+
     if start_time is None:
         start_time = event.ts
-    
+
     syscall_name = get_syscall_name(event.syscall_nr)
     comm = event.comm.decode('utf-8', 'replace')
-    
+
     # Convert nanoseconds timestamp to seconds with nanosecond precision
     ts_sec = event.ts / 1_000_000_000
     relative_ts = (event.ts - start_time) / 1_000_000_000
-    
-    # CSV format: timestamp,relative_time,pid,comm,uid,syscall
-    print(f"{ts_sec:.9f},{relative_ts:.9f},{event.pid},{comm},{event.uid},{syscall_name}", file=output_file)
+    duration_us = event.duration_ns / 1000.0  # Convert to microseconds
+
+    # CSV format: timestamp,relative_time,pid,comm,uid,syscall,duration_us
+    print(f"{ts_sec:.9f},{relative_ts:.9f},{event.pid},{comm},{event.uid},{syscall_name},{duration_us:.3f}",
+          file=output_file)
     output_file.flush()
 
 if __name__ == "__main__":
     # Load BPF program
     b = BPF(text=bpf_text)
-    
+
     # Attach to perf output
     b["events"].open_perf_buffer(print_event)
 
     signal.signal(signal.SIGUSR1, print_header)
-    
+
     msg = "Tracing system calls from REALTIME processes only (SCHED_FIFO/SCHED_RR)..."
     if args.output:
         msg += f"\nOutput file: {args.output}"
-    
+
     print(msg, file=sys.stderr)
-    
+
     # CSV header
     print_header()
-    
+
     # Signal that we're ready
     print("READY", file=sys.stderr)
     sys.stderr.flush()
-    
+
     # Read events
     try:
         while True:
             b.perf_buffer_poll()
     except KeyboardInterrupt:
         print("\n\nDetaching...", file=sys.stderr)
-        
+
         if args.output:
             output_file.close()
