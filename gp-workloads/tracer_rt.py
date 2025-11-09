@@ -17,7 +17,7 @@ def get_next_filename(base_filename):
     """
     name, ext = os.path.splitext(base_filename)
     counter = 0
-    new_filename = base_filename
+    new_filename = f"{name}_{counter}{ext}"
 
     while os.path.exists(new_filename):
         counter += 1
