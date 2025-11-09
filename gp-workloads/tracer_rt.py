@@ -3,17 +3,42 @@ from bcc import BPF
 import argparse
 import sys
 import signal
+import os
 
 # Command line arguments
 parser = argparse.ArgumentParser(description='Trace system calls from realtime processes')
 parser.add_argument('-o', '--output', help='Output file (default: stdout)')
 args = parser.parse_args()
+output_file = sys.stdout
 
-# Setup output file
-if args.output:
-    output_file = open(args.output, 'w')
-else:
-    output_file = sys.stdout
+def get_next_filename(base_filename):
+    """
+    Generates an incremented filename if the base_filename already exists.
+    Example: "report.txt" -> "report_1.txt", "report_2.txt", etc.
+    """
+    name, ext = os.path.splitext(base_filename)
+    counter = 0
+    new_filename = base_filename
+
+    while os.path.exists(new_filename):
+        counter += 1
+        new_filename = f"{name}_{counter}{ext}"
+    return new_filename
+
+def get_syscall_name(nr):
+    return syscall_names.get(nr, f"syscall_{nr}")
+
+def print_header(sig=None, frame=None):
+    global output_file
+
+    # Setup output file
+    if args.output:
+        if output_file != sys.stdout:
+            output_file.close()
+        output_file = open(get_next_filename(args.output), 'w')
+
+    print("timestamp,relative_time,pid,comm,uid,syscall,duration_us", file=output_file)
+    output_file.flush()
 
 # eBPF program
 bpf_text = """
@@ -111,17 +136,8 @@ syscall_names = {
     292: "dup3", 293: "pipe2", 316: "renameat2", 322: "execveat"
 }
 
-def get_syscall_name(nr):
-    return syscall_names.get(nr, f"syscall_{nr}")
-
-def print_header(sig=None, frame=None):
-    print("timestamp,relative_time,pid,comm,uid,syscall,duration_us", file=output_file)
-    output_file.flush()
-
-
 # Tracking for relative timestamps
 start_time = None
-
 
 # Process event
 def print_event(cpu, data, size):
