@@ -16,7 +16,7 @@ def get_next_filename(base_filename):
     Example: "report.txt" -> "report_1.txt", "report_2.txt", etc.
     """
     name, ext = os.path.splitext(base_filename)
-    counter = 0
+    counter = 1
     new_filename = f"{name}_{counter}{ext}"
 
     while os.path.exists(new_filename):
