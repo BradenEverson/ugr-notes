@@ -9,7 +9,6 @@ import os
 parser = argparse.ArgumentParser(description='Trace system calls from realtime processes')
 parser.add_argument('-o', '--output', help='Output file (default: stdout)')
 args = parser.parse_args()
-output_file = sys.stdout
 
 def get_next_filename(base_filename):
     """
@@ -28,17 +27,25 @@ def get_next_filename(base_filename):
 def get_syscall_name(nr):
     return syscall_names.get(nr, f"syscall_{nr}")
 
-def print_header(sig=None, frame=None):
+def handle_interrupt(sig, frame):
     global output_file
 
     # Setup output file
     if args.output:
-        if output_file != sys.stdout:
-            output_file.close()
+        output_file.close()
         output_file = open(get_next_filename(args.output), 'w')
 
+    print_header()
+
+def print_header():
     print("timestamp,relative_time,pid,comm,uid,syscall,duration_us", file=output_file)
     output_file.flush()
+
+# Setup output
+if args.output:
+    output_file = open(get_next_filename(args.output), 'w')
+else:
+    output_file = sys.stdout
 
 # eBPF program
 bpf_text = """
@@ -167,7 +174,7 @@ if __name__ == "__main__":
     # Attach to perf output
     b["events"].open_perf_buffer(print_event)
 
-    signal.signal(signal.SIGUSR1, print_header)
+    signal.signal(signal.SIGUSR1, handle_interrupt)
 
     msg = "Tracing system calls from REALTIME processes only (SCHED_FIFO/SCHED_RR)..."
     if args.output:
