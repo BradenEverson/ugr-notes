@@ -5,6 +5,7 @@
 echo "Starting intensive workload tests..."
 
 echo "Running system call tracer..."
+sudo killall python3
 sudo rm -f out/cpu_intensive*.csv
 sudo python3 tracer_rt.py -o out/cpu_intensive.csv &
 TRACER_PID=$!
@@ -150,6 +151,7 @@ sudo kill $TRACER_PID
 sleep 1
 
 # Cleanup
+sudo killall python3
 echo ""
 echo "=== Cleanup ==="
 sudo rm -f /tmp/largefile /tmp/largefile.gz /tmp/largefile_uncompressed

@@ -5,6 +5,7 @@
 echo "Starting syscall tracing tests..."
 
 echo "Running system call tracer..."
+sudo killall python3
 sudo rm -f out/task_tests*.csv
 sudo python3 tracer_rt.py -o out/task_tests.csv &
 TRACER_PID=$!
@@ -92,6 +93,7 @@ sudo kill $TRACER_PID
 sleep 1
 
 # Cleanup
+sudo killall python3
 echo ""
 echo "=== Cleanup ==="
 sudo rm -f /tmp/test.tar.gz

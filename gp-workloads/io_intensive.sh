@@ -5,6 +5,7 @@
 echo "Starting I/O intensive workload tests..."
 
 echo "Running system call tracer..."
+sudo killall python3
 sudo rm -f out/io_intensive*.csv
 sudo python3 tracer_rt.py -o out/io_intensive.csv &
 TRACER_PID=$!
@@ -205,6 +206,7 @@ sudo kill $TRACER_PID
 sleep 1
 
 # Cleanup
+sudo killall python3
 echo ""
 echo "=== Cleanup ==="
 rm -rf $TEST_DIR

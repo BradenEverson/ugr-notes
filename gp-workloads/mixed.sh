@@ -5,6 +5,7 @@
 echo "Starting mixed workload tests..."
 
 echo "Running system call tracer..."
+sudo killall python3
 sudo rm -f out/mixed*.csv
 sudo python3 tracer_rt.py -o out/mixed.csv &
 TRACER_PID=$1
@@ -328,6 +329,7 @@ sudo kill $TRACER_PID
 sleep 1
 
 # Cleanup
+sudo killall python3
 echo ""
 echo "=== Cleanup ==="
 sudo rm -rf $TEST_DIR
