@@ -5,10 +5,10 @@
 echo "Starting syscall tracing tests..."
 
 echo "Running system call tracer..."
-sudo rm out/task_tests.csv
+sudo rm -f out/task_tests*.csv
 sudo python3 tracer_rt.py -o out/task_tests.csv &
 TRACER_PID=$!
-sleep 15
+sleep 20
 
 # File Operations
 echo "=== Test 1: Directory listing ==="

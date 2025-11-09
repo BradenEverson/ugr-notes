@@ -5,7 +5,7 @@
 echo "Starting I/O intensive workload tests..."
 
 echo "Running system call tracer..."
-sudo rm out/io_intensive.csv
+sudo rm -f out/io_intensive*.csv
 sudo python3 tracer_rt.py -o out/io_intensive.csv &
 TRACER_PID=$!
 sleep 15
