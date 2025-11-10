@@ -5,12 +5,16 @@ import sys
 import signal
 import os
 
-buffer_pages = 256
-
 # Command line arguments
 parser = argparse.ArgumentParser(description='Trace system calls from realtime processes')
 parser.add_argument('-o', '--output', help='Output file (default: stdout)')
+parser.add_argument('-b', '--buffer-pages', type=int, default=64, help='Number of pages for perf buffer (default: 64, must be power of 2)')
 args = parser.parse_args()
+
+# Validate buffer pages is power of 2
+if args.buffer_pages & (args.buffer_pages - 1) != 0:
+    print(f"Error: buffer-pages must be a power of 2 (e.g., 64, 128, 256, 512, 1024)", file=sys.stderr)
+    sys.exit(1)
 
 def get_next_filename(base_filename):
     """
@@ -174,14 +178,11 @@ if __name__ == "__main__":
     b = BPF(text=bpf_text)
 
     # Attach to perf output
-    b["events"].open_perf_buffer(print_event, page_cnt=buffer_pages)
+    b["events"].open_perf_buffer(print_event, page_cnt=args.buffer_pages)
 
     signal.signal(signal.SIGUSR1, handle_interrupt)
 
     msg = "Tracing system calls from REALTIME processes only (SCHED_FIFO/SCHED_RR)..."
-    if args.output:
-        msg += f"\nOutput file: {args.output}"
-
     print(msg, file=sys.stderr)
 
     # CSV header
