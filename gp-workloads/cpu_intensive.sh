@@ -7,7 +7,7 @@ echo "Starting intensive workload tests..."
 echo "Running system call tracer..."
 sudo killall python3
 sudo rm -f out/cpu_intensive*.csv
-sudo python3 tracer_rt.py -o out/cpu_intensive.csv &
+sudo python3 tracer_rt.py -o out/cpu_intensive.csv -b 256 &
 TRACER_PID=$!
 sleep 15
 

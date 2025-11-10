@@ -7,7 +7,7 @@ echo "Starting mixed workload tests..."
 echo "Running system call tracer..."
 sudo killall python3
 sudo rm -f out/mixed*.csv
-sudo python3 tracer_rt.py -o out/mixed.csv &
+sudo python3 tracer_rt.py -o out/mixed.csv -b 256 &
 TRACER_PID=$1
 sleep 15
 

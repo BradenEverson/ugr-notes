@@ -7,7 +7,7 @@ echo "Starting syscall tracing tests..."
 echo "Running system call tracer..."
 sudo killall python3
 sudo rm -f out/task_tests*.csv
-sudo python3 tracer_rt.py -o out/task_tests.csv &
+sudo python3 tracer_rt.py -o out/task_tests.csv -b 256 &
 TRACER_PID=$!
 sleep 20
 
