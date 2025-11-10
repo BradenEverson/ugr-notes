@@ -5,6 +5,8 @@ import sys
 import signal
 import os
 
+buffer_pages = 256
+
 # Command line arguments
 parser = argparse.ArgumentParser(description='Trace system calls from realtime processes')
 parser.add_argument('-o', '--output', help='Output file (default: stdout)')
@@ -172,7 +174,7 @@ if __name__ == "__main__":
     b = BPF(text=bpf_text)
 
     # Attach to perf output
-    b["events"].open_perf_buffer(print_event)
+    b["events"].open_perf_buffer(print_event, page_cnt=buffer_pages)
 
     signal.signal(signal.SIGUSR1, handle_interrupt)
 
