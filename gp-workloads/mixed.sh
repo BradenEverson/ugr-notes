@@ -7,8 +7,8 @@ echo "Starting mixed workload tests..."
 echo "Running system call tracer..."
 sudo killall python3
 sudo rm -f out/mixed*.csv
-sudo python3 tracer_rt.py -o out/mixed.csv -b 256 &
-TRACER_PID=$1
+sudo python3 tracer_rt.py -o out/mixed.csv -b 1024 &
+TRACER_PID=$!
 sleep 15
 
 TEST_DIR="/tmp/mixed_test"
@@ -21,6 +21,7 @@ sudo chrt -f 50 bash -c "
   grep -o 'href=\"[^\"]*\"' $TEST_DIR/webpage.html > $TEST_DIR/links.txt
   wc -l $TEST_DIR/links.txt
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -36,6 +37,7 @@ sudo chrt -f 50 bash -c "
   grep 'Status: 200' $TEST_DIR/access.log | wc -l > $TEST_DIR/success_count.txt
   awk '{print \$6}' $TEST_DIR/access.log | sort | uniq -c > $TEST_DIR/ip_counts.txt
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -54,6 +56,7 @@ sudo chrt -f 50 bash -c "
   # Load: compress and save
   gzip -c $TEST_DIR/data.csv > $TEST_DIR/data.csv.gz
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -86,6 +89,7 @@ EOF
   # Package
   tar -czf $TEST_DIR/app.tar.gz -C $TEST_DIR app output.txt
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -104,6 +108,7 @@ if command -v convert &> /dev/null; then
     stat $TEST_DIR/image.png > $TEST_DIR/image_info.txt
     identify $TEST_DIR/image.png >> $TEST_DIR/image_info.txt
   "
+  sleep 1
   sudo kill -USR1 $TRACER_PID
 else
   echo "ImageMagick not available, skipping"
@@ -126,6 +131,7 @@ EOF
   # Backup database
   sqlite3 $TEST_DIR/app.db '.dump' | gzip > $TEST_DIR/backup.sql.gz
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -155,6 +161,7 @@ with open("/tmp/mixed_test/analysis.json", "w") as f:
 
 print(f"Processed {len(data)} points")
 EOF
+sleep 1
 sudo kill -USR1 $TRACER_PID
 else
   echo "Python3 not available, skipping"
@@ -177,6 +184,7 @@ sudo chrt -f 50 bash -c "
   # Cache with timestamp
   echo \"\$(date +%s): \$(cat $TEST_DIR/api_response.txt)\" >> $TEST_DIR/cache.txt
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -196,6 +204,7 @@ sudo chrt -f 50 bash -c "
     md5sum \$file >> $TEST_DIR/checksums.txt
   done
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -214,6 +223,7 @@ sudo chrt -f 50 bash -c "
   # Verify archive
   tar -tzf $TEST_DIR/backup.tar.gz > $TEST_DIR/archive_contents.txt
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -229,6 +239,7 @@ sudo chrt -f 50 bash -c "
   # Aggregate
   awk -F',' '{sum+=\$2; count++} END {print \"Avg load:\", sum/count}' $TEST_DIR/metrics.csv > $TEST_DIR/metrics_summary.txt
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -248,6 +259,7 @@ sudo chrt -f 50 bash -c "
   # Cleanup queue
   > $TEST_DIR/queue.jsonl
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -269,6 +281,7 @@ sudo chrt -f 50 bash -c "
   cat $TEST_DIR/chunk_*.out > $TEST_DIR/output.txt
   rm $TEST_DIR/chunk_*
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -296,6 +309,7 @@ EOF
   # Update
   sed -i 's/\"1.0\"/\"1.1\"/' $TEST_DIR/config.json
 "
+sleep 1
 sudo kill -USR1 $TRACER_PID
 sleep 1
 
@@ -325,6 +339,7 @@ EOF
   sed -i '/DISK_DATA/r $TEST_DIR/disk_report.txt' $TEST_DIR/system_report.html
   sed -i 's/DISK_DATA//' $TEST_DIR/system_report.html
 "
+sleep 1
 sudo kill $TRACER_PID
 sleep 1
 
