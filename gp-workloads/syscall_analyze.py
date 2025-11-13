@@ -6,16 +6,21 @@ Produces a single row per input CSV file with one column per syscall
 import csv
 import sys
 import glob
-import os
 from collections import defaultdict
 import argparse
 
+def get_system_calls(csv_file, all_syscalls):
+
+    # Track all unique syscalls we encounter
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            syscall = row['syscall']
+            all_syscalls.add(syscall)
 
 def analyze_syscalls(csv_file):
     """Parse CSV and calculate aggregate statistics across all processes"""
-
-    # Track all unique syscalls we encounter
-    all_syscalls = set()
 
     # Aggregate statistics across ALL processes
     aggregate_stats = {
@@ -44,8 +49,6 @@ def analyze_syscalls(csv_file):
             syscall = row['syscall']
             duration_us = float(row['duration_us'])
 
-            all_syscalls.add(syscall)
-
             # Calculate syscall end time
             syscall_end = timestamp + (duration_us / 1_000_000.0)
 
@@ -71,7 +74,7 @@ def analyze_syscalls(csv_file):
 
             proc['last_syscall_end'] = syscall_end
 
-    return aggregate_stats, sorted(all_syscalls)
+    return aggregate_stats
 
 
 def export_single_row_csv(aggregate_stats, all_syscalls, csv_filename, output_file, append=False):
@@ -94,7 +97,7 @@ def export_single_row_csv(aggregate_stats, all_syscalls, csv_filename, output_fi
 
         # Write header only if creating new file
         if not file_exists:
-            header = ['trace_file'] + [f"{sc}_ms" for sc in all_syscalls] + ['userspace_ms', 'total_ms', 'wall_time_s']
+            header = ['trace_file'] + [f"{sc}" for sc in all_syscalls] + ['userspace_ms', 'total_ms', 'wall_time_s']
             writer.writerow(header)
 
         total_syscall_ms = aggregate_stats['total_syscall_time_us'] / 1000.0
@@ -200,9 +203,14 @@ if __name__ == "__main__":
             print(f"Found {len(unique_files)} file(s) to process")
             print()
 
+        all_syscalls = set()
+        for csv_file in unique_files:
+            get_system_calls(csv_file, all_syscalls)
+        sorted(all_syscalls)
+
         # Process first file (create new output file)
         first_file = unique_files[0]
-        aggregate_stats, all_syscalls = analyze_syscalls(first_file)
+        aggregate_stats = analyze_syscalls(first_file)
 
         if not args.quiet:
             print_summary(aggregate_stats, first_file)
@@ -213,7 +221,7 @@ if __name__ == "__main__":
 
         # Process remaining files (append to output file)
         for csv_file in unique_files[1:]:
-            aggregate_stats, all_syscalls = analyze_syscalls(csv_file)
+            aggregate_stats = analyze_syscalls(csv_file)
 
             if not args.quiet:
                 print_summary(aggregate_stats, csv_file)
