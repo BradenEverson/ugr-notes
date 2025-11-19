@@ -1,0 +1,8 @@
+name,cycles,time(us)
+io_dt,25,0.1388
+cpu_dt,25,0.1388
+io_cpu_combined_dt,25,0.1388
+cpu_linear_svm_floats,276,1.5333
+both_linear_svm_floats,545,3.0277
+cpu_linear_svm_quant,603,
+both_linear_svm_quant,1187,
