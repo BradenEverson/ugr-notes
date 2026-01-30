@@ -1,0 +1,13 @@
+scheduler,average starvation (ms)
+rr,20
+rr-dt,13
+rr-svm,14
+rr,23.33
+rr-dt,15
+rr-svm,15
+rr,27
+rr-dt,16
+rr-svm,18
+rr,28.75
+rr-dt,18
+rr-svm,16
