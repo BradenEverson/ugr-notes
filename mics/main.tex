@@ -1,0 +1,100 @@
+\documentclass{mics}
+
+% Additional packages you might need
+\usepackage{graphicx}
+\usepackage{array}
+
+\title{Sample MICS Paper Title}
+
+% For multiple authors side-by-side, use \authorblock for each author
+\author{%
+    \authorblock{%
+        Mary Smith \\
+        Name of Department \\
+        Name of Institution \\
+        City, State Zip \\
+        Contact email
+    }%
+    \hfill
+    \authorblock{%
+        Joe Jones \\
+        Name of Department \\
+        Name of Institution \\
+        City, State Zip \\
+        Contact email
+    }%
+}
+
+% Alternative for authors at same institution (vertically stacked):
+% \author{%
+% Mary Smith and Joe Jones \\
+% Name of Department \\
+% Name of Institution \\
+% City, State Zip \\
+% Contact email
+% }
+
+\begin{document}
+
+    \maketitle
+
+    \begin{abstract}
+        This is the abstract of the paper. Note that the title and the abstract are the only things on the title page. This example shows two authors at different institutions. If information is the same for multiple authors, the authors can be listed together under the same institutional information. The abstract should be 150 words or less and provides a concise summary of the paper's main contributions and findings.
+    \end{abstract}
+
+    \section{Level 1 Header}
+
+    This is the first section of the paper. It starts on a new page. Note how the left/right justification appears: text is justified on the left as well as on the right. This section cites a paper by Author A \cite{authorA}. It then cites a paper by Author B \cite{authorB}. The citations are clearly described in the reference section. Note that citation format can be determined by the author. This is only one example.
+
+    \subsection{Level 2 Header}
+
+    This is a subsection of Section 1. The figure in Figure \ref{fig:stars} is of four stars.
+
+    This is the second paragraph of the subsection. Note that there is a blank line between the paragraphs and no indentation at the beginning of the second paragraph.
+
+    \begin{figure}[h]
+        \centering
+% Replace with your actual figure
+% \includegraphics[width=2in]{stars.png}
+        \rule{2in}{2in} % Placeholder for actual figure
+        \caption{Figure Caption.}
+        \label{fig:stars}
+    \end{figure}
+
+    This paragraph starts after the figure.
+
+    \subsubsection{Level 3 Header}
+
+    This is a sub-subsection of Section 1. Table \ref{tab:data} contains data.
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ll}
+            \hline
+            Field 1 & Field 2 \\
+            \hline
+            data 1a & data 2a \\
+            data 1b & data 2b \\
+            \hline
+        \end{tabular}
+        \caption{Table Caption.}
+        \label{tab:data}
+    \end{table}
+
+    This paragraph starts after the table.
+
+    \begin{thebibliography}{9}
+
+        \bibitem{authorA}
+        Author A.
+        Paper A.
+        In \emph{Meeting A 2004 Proceedings}, pages 65--74, July 2004.
+
+        \bibitem{authorB}
+        Author B.
+        Paper B.
+        \emph{Journal B}, 90(4):549--563, December 2003.
+
+    \end{thebibliography}
+
+\end{document}
