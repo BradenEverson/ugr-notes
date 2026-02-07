@@ -1,0 +1,4 @@
+python wait_run_binner.py --inputs "./out/cpu_intensive_*.csv" --bin-sizes-us 500 1000 1500 2000 5000 --out-root .\time_slices\ --title-map-sh ./cpu_intensive.sh --stem-number-regex '_(\d+)$'
+python wait_run_binner.py --inputs "./out/io_intensive_*.csv" --bin-sizes-us 500 1000 1500 2000 5000 --out-root .\time_slices\ --title-map-sh ./io_intensive.sh --stem-number-regex '_(\d+)$'
+python wait_run_binner.py --inputs "./out/mixed_*.csv" --bin-sizes-us 500 1000 1500 2000 5000 --out-root .\time_slices\ --title-map-sh ./mixed.sh --stem-number-regex '_(\d+)$'
+python wait_run_binner.py --inputs "./out/task_tests_*.csv" --bin-sizes-us 500 1000 1500 2000 5000 --out-root .\time_slices\ --title-map-sh ./task_tests.sh --stem-number-regex '_(\d+)$'
